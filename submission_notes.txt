@@ -1,0 +1,45 @@
+Submission Notes
+
+Project Overview
+This solution predicts demand for the Flipkart hackathon using a time-aware, leakage-safe gradient boosting pipeline. The core model is an XGBoost regressor trained on engineered spatial, temporal, categorical, and lag-based features.
+
+Approach
+1. Loaded the provided train and test CSV files.
+2. Extracted time features from the timestamp and created cyclic encodings to represent periodic demand patterns.
+3. Decoded geohashes into latitude and longitude and added spatial distance features to high-demand hub locations.
+4. Built historical demand aggregates using only Day 48 data to avoid target leakage.
+5. Added lag and morning-baseline features to capture short-term temporal demand dynamics.
+6. Encoded categorical variables with label encoding and leakage-safe target encoding.
+7. Applied a Box-Cox transformation to the target to stabilize the distribution during training.
+8. Trained and validated the model with a time-based split: Day 48 for training and Day 49 for validation.
+9. Refit the final model on the full training data and generated submission.csv for the test set.
+
+Feature Engineering Details
+- Temporal features: hour, minute, time_slot, day_of_week, is_weekend.
+- Cyclic time encodings: hour_sin, hour_cos, slot_sin, slot_cos.
+- Time relative feature: time_slot_diff from the 2:00 AM slot.
+- Spatial features: latitude, longitude, and Euclidean distance to five selected high-demand hubs.
+- Geohash aggregates: geo_demand_mean, geo_demand_median, geo_demand_std, geo_demand_max.
+- Lag features: demand_lag_95, demand_lag_96, demand_lag_97.
+- Morning baseline features: morning_mean, morning_std, morning_max, morning_median, latest_demand.
+- Interaction features: ratios and differences between morning statistics, lag values, and geohash demand statistics.
+- Encodings: label encodings for RoadType, LargeVehicles, Landmarks, and Weather, plus target encodings computed only from Day 48.
+
+Tools Used
+- Python
+- pandas, numpy
+- matplotlib, seaborn
+- pygeohash
+- scipy
+- scikit-learn
+- xgboost
+
+Relevant Source Files
+- GridLock_Alchemist.ipynb
+- submission.csv
+- dataset/train.csv
+- dataset/test.csv
+
+Notes
+- Historical and target-based features were computed in a leakage-safe way using Day 48 only.
+- The final prediction file was written to submission.csv.
