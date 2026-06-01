@@ -217,13 +217,14 @@ def main():
         random_state=42,
     )
     lgb = LGBMRegressor(
-        n_estimators=1200,
-        learning_rate=0.025,
-        num_leaves=64,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        reg_alpha=0.1,
-        reg_lambda=1.2,
+        n_estimators=1900,
+        learning_rate=0.018,
+        num_leaves=11,
+        min_child_samples=12,
+        subsample=0.92,
+        colsample_bytree=0.92,
+        reg_alpha=0.03,
+        reg_lambda=0.7,
         n_jobs=4,
         random_state=52,
         verbose=-1,
@@ -240,23 +241,13 @@ def main():
         allow_writing_files=False,
     )
 
-    models = [("xgb", xgb), ("lgb", lgb), ("cat", cat)]
+    models = [("lgb", lgb)]
     val_preds = []
     for name, model in models:
         model.fit(train_set[features], train_set["demand_transformed"])
         pred = inverse(model.predict(val_set[features]), lam)
         val_preds.append(pred)
         print(f"{name} R2: {r2_score(val_set['demand'], pred):.6f}", flush=True)
-
-    best = (-1, None)
-    for wx in np.arange(0.0, 1.01, 0.05):
-        for wl in np.arange(0.0, 1.01 - wx, 0.05):
-            wc = 1.0 - wx - wl
-            blend = wx * val_preds[0] + wl * val_preds[1] + wc * val_preds[2]
-            score = r2_score(val_set["demand"], blend)
-            if score > best[0]:
-                best = (score, (wx, wl, wc))
-    print(f"blend R2: {best[0]:.6f}, weights={best[1]}", flush=True)
 
     x_full = train[features]
     y_full = train["demand_transformed"]
@@ -265,8 +256,7 @@ def main():
         model.fit(x_full, y_full)
         predictions.append(inverse(model.predict(test[features]), lam))
 
-    wx, wl, wc = best[1]
-    final_preds = wx * predictions[0] + wl * predictions[1] + wc * predictions[2]
+    final_preds = predictions[0]
     final_preds = np.clip(final_preds, 0, train["demand"].max())
 
     submission = pd.DataFrame({"Index": test["Index"], "demand": final_preds})
