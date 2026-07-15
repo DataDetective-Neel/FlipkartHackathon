@@ -8,7 +8,7 @@ This project contains training and ensembling scripts used to produce the final 
 ## Key files
 - `GridLock_Alchemist.ipynb` — exploratory notebook
 - `train_improved.py` — primary training script
-- `train_ensemble.py` — ensembling / blending script
+- `train_ensemble.py` — ensembling/blending script
 - `submission.csv` — final generated submission
 - `dataset/` — contains `train.csv`, `test.csv`, and `sample_submission.csv`
 
